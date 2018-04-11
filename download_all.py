@@ -58,7 +58,7 @@ def file_exists(fname):
 
 
 def download_image(login_fn, get_fn, url, fname):
-    """Download individual image."""
+    """Download an individual image."""
     print('Downloading {}...'.format(fname))
     for attempt in range(1, 10):
         resp = get_fn(BASE_URL.format(url))
@@ -110,13 +110,11 @@ def run(email, password):
     """Run the downloader."""
     with requests.Session() as session:
         login_fn = partial(login, session, email, password)
-        post_fn = partial(session.post)
-        get_fn = partial(session.get)
-        for meta in all_file_metadata(login_fn, post_fn):
+        for meta in all_file_metadata(login_fn, session.post):
             fname, date, md5 = meta['file_name'], meta['date'], meta['key']
             if not file_exists(fname):
-                url = get_image_url(login_fn, post_fn, date, md5)
-                download_image(login_fn, get_fn, url, fname)
+                url = get_image_url(login_fn, session.post, date, md5)
+                download_image(login_fn, session.get, url, fname)
                 set_file_mtime(fname, date)
 
 
